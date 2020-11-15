@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.bnuz.chenjianbang.student.dao.IStudentsDao">
+    <insert id="insert" parameterType="cn.edu.bnuz.chenjianbang.student.entity.StudentDo">
+		insert into students (name,birthday,origin,gpa) values (#{name},#{birthday},#{origin},#{gpa})
+	</insert>
+
+    <delete id="delete" parameterType="java.lang.Long">
+		delete from students where id=#{id}
+	</delete>
+
+    <update id="update" parameterType="cn.edu.bnuz.chenjianbang.student.entity.StudentDo">
+		update students set name=#{name},birthday=#{birthday},origin=#{origin},gpa=#{gpa} where id=#{id}
+	</update>
+
+    <select id="selectOne" resultMap="studentModel" parameterType="java.lang.Long">
+        select <include refid="sqlBase" /> from students where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="studentModel">
+        select <include refid="sqlBase" /> from students
+    </select>
+
+    <select id="selectPageCount" resultMap="ResultOfLong" parameterType="cn.edu.bnuz.chenjianbang.student.entity.StudentPageDo">
+        select count(0) <include refid="pageListSql" />
+    </select>
+
+    <select id="selectPage" resultMap="studentModel" parameterType="cn.edu.bnuz.chenjianbang.student.entity.StudentPageDo">
+        select <include refid="sqlBase" /> <include refid="pageListSql" /> <include refid="limitSql" />
+    </select>
+
+    <sql id="sqlBase">
+		id,name,birthday,origin,gpa
+	</sql>
+
+    <sql id="pageListSql">
+        from students
+        <where>
+            <if test="id != null and id !=''">
+                and `id`=#{id}
+            </if>
+            <if test="name != null and name !=''">
+                and `name` like CONCAT('%','${name}','%')
+            </if>
+            <if test="birthday_upper_limit != null">
+                and `birthday` &lt;= #{birthday_upper_limit}
+            </if>
+            <if test="birthday_lower_limit != null">
+                and `birthday` &gt;= #{birthday_lower_limit}
+            </if>
+            <if test="origin != null and origin !=''">
+                and `origin` like CONCAT('%','${origin}','%')
+            </if>
+            <if test="gpa_upper_limit != null and gpa_upper_limit !=0">
+                and `gpa` &lt;= #{gpa_upper_limit}
+            </if>
+            <if test="gpa_lower_limit != null and gpa_lower_limit !=0">
+                and `gpa` &gt;= #{gpa_lower_limit}
+            </if>
+        </where>
+        ORDER BY `id`
+    </sql>
+
+    <sql id="limitSql">
+        <if test="(lineNum != null) and pageSize != null and pageSize != 0">
+            limit #{lineNum}, #{pageSize}
+        </if>
+    </sql>
+
+    <resultMap id="studentModel" type="cn.edu.bnuz.chenjianbang.student.entity.StudentDo">
+        <id column="id" javaType="java.lang.Long" jdbcType="BIGINT" property="id" />
+        <result column="name" javaType="java.lang.String" jdbcType="VARCHAR" property="name" />
+        <result column="birthday" javaType="java.sql.Date" jdbcType="DATE" property="birthday" />
+        <result column="origin" javaType="java.lang.String" jdbcType="VARCHAR" property="origin" />
+        <result column="gpa" javaType="java.lang.Double" jdbcType="DECIMAL" property="gpa" />
+    </resultMap>
+    <resultMap id="ResultOfLong" type="java.lang.Long">
+        <result column="count(0)" property="count(0)" javaType="long"/>
+    </resultMap>
+</mapper>
